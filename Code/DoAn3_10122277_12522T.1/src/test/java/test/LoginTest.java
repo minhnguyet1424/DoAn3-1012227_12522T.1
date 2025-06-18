@@ -2,7 +2,6 @@ package test;
 
 import base.BaseSetup;
 import config.AppURL;
-import org.openqa.selenium.WebDriver;
 import org.testng.annotations.*;
 import pages.LoginPage;
 import utils.ExcelReader;
@@ -10,27 +9,23 @@ import utils.ExcelReport;
 
 import java.util.List;
 
-public class LoginTest extends BaseSetup {  // ✅ Kế thừa BaseSetup
+public class LoginTest extends BaseSetup {
     List<String[]> testData;
 
     @BeforeClass
     public void setup() throws Exception {
-        initializeDriver(); // ✅ Sử dụng phương thức từ BaseSetup
-        testData = ExcelReader.readData("src/test/resources/Book1.xlsx");
+        initializeDriver();
+        testData = ExcelReader.readLoginData("src/test/resources/InputData.xlsx");
         ExcelReport.startNewLoginTest("Login");
     }
-
     @AfterClass
     public void tearDown() {
-        ExcelReport.saveReport();
-        closeDriver(); // ✅ Sử dụng phương thức từ BaseSetup
+        tearDownAfterTest();
     }
-
     @Test(dataProvider = "loginData")
     public void testLogin(String email, String password, String expectedError, String rowIndexStr) throws Exception {
         int rowIndex = Integer.parseInt(rowIndexStr);
-
-        // Đảm bảo luôn về trang login
+        // Luôn trở về trang login trước mỗi test
         if (!driver.getCurrentUrl().contains("/account/login")) {
             driver.get("https://sachtaodan.vn/account/logout");
             Thread.sleep(2000);
@@ -41,7 +36,7 @@ public class LoginTest extends BaseSetup {  // ✅ Kế thừa BaseSetup
         loginPage.enterEmail(email);
         loginPage.enterPassword(password);
         loginPage.clickLogin();
-        Thread.sleep(3000);
+        Thread.sleep(3000);  // đợi xử lý login
 
         String actualResult;
         if (driver.getCurrentUrl().contains("/account") && !driver.getCurrentUrl().contains("/account/login")) {

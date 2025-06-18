@@ -5,11 +5,11 @@ import org.openqa.selenium.support.ui.*;
 
 import java.time.Duration;
 
-public class CheckoutPage {
+public class OrderPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    public CheckoutPage(WebDriver driver) {
+    public OrderPage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }

@@ -1,73 +1,48 @@
 package test;
 
+import base.BaseSetup;
 import base.QlWebdriver;
+import config.AppURL;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.*;
 import org.testng.annotations.*;
 import pages.SignupPage;
 import utils.ExcelReader;
-import utils.ExcelLogger;
 import utils.ExcelReport;
-import config.AppURL;
 
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Duration;
 import java.util.List;
 
-public class SignupTest {
-    WebDriver driver;
-    String dataPath = "src/test/resources/DataSignup.xlsx";
+public class SignupTest extends BaseSetup {
     List<String[]> testData;
-    ExcelLogger logger;
-
     @BeforeClass
-    public void setup() throws Exception {
-        this.testData = ExcelReader.readSignupData(dataPath);
-        this.driver = QlWebdriver.getDriver();
+    public void setUp() throws Exception {
+        initializeDriver();
+        driver.get(AppURL.TRANG_CHU);
         ExcelReport.startNewSignupTest("Signup");
-
-        // Khởi tạo logger
-        this.logger = new ExcelLogger("test-output/report.xlsx");
+        testData = ExcelReader.readSignupData("src/test/resources/InputData.xlsx");
     }
-
-
-
     @AfterClass
     public void tearDown() {
-        ExcelReport.saveReport();
-        QlWebdriver.closeDriver();
+        tearDownAfterTest();
     }
-
     @Test(dataProvider = "signupData")
     public void testSignup(String firstName, String lastName, String email, String password, String expected) throws Exception {
         driver.get(AppURL.SIGNUP);
         SignupPage signup = new SignupPage(driver);
         signup.register(firstName, lastName, email, password);
-        Thread.sleep(3000);
 
-        String actual = signup.getMessage();
-        String status = actual.equals(expected) ? "Pass" : "Fail";
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.presenceOfElementLocated(By.cssSelector("ul.disc > li")),
+                ExpectedConditions.presenceOfElementLocated(By.cssSelector(".note, .error, .success"))
+        ));
 
-        // Ghi vào báo cáo tổng
-        ExcelReport.writeSignupReport(lastName, firstName, email, password, expected, actual, status);
+        String actual = signup.getAllMessages();
+        String status = actual.contains(expected) ? "Pass" : "Fail";
 
-        // Ghi log chi tiết
-        String[] headers = {
-                "STT", "Thời gian", "Họ", "Tên", "Email", "Mật khẩu", "Kết quả mong đợi", "Kết quả thực tế", "Trạng thái"
-        };
-        String[] data = {
-                "", // STT để trống, logger sẽ xử lý hoặc để người dùng tự kiểm tra
-                new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()),
-                firstName,
-                lastName,
-                email,
-                password,
-                expected,
-                actual,
-                status
-        };
-
-        logger.writeRow("Signup", headers, data);
+        ExcelReport.writeSignupReport(firstName, lastName, email, password, expected, actual, status);
     }
 
     @DataProvider(name = "signupData")

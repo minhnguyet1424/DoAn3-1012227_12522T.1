@@ -1,0 +1,19 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Sachtaodan Test Suite" verbose="1" parallel="false">
+
+    <test name="Login Test">
+        <classes><class name="test.LoginTest"/></classes>
+    </test>
+
+    <test name="Signup Test">
+        <classes><class name="test.SignupTest"/></classes>
+    </test>
+
+    <test name="Search Test">
+        <classes><class name="test.SearchTest"/></classes>
+    </test>
+
+    <test name="Order Test">
+        <classes><class name="test.OrderTest"/></classes>
+    </test>
+</suite>

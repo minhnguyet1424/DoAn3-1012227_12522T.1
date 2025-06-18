@@ -14,9 +14,11 @@ public class ExcelReport {
     private static String currentSheetName = "";
     private static int currentRow = 0;
     private static int testCount = 1;
+    private static int stt = 1;
 
-    // === BẮT ĐẦU LOGIN ===
+
     public static void startNewLoginTest(String sheetName) {
+        resetSTT();
         currentSheetName = sheetName;
         setupSheetWithHeaders(new String[]{
                 "STT", "Thời gian", "Email", "Password", "Kết quả mong đợi", "Kết quả thực tế", "Trạng thái"
@@ -25,8 +27,7 @@ public class ExcelReport {
 
     public static void writeLoginReport(String email, String password, String expected, String actual, String status) {
         Row row = sheet.createRow(currentRow++);
-        int index = getTestCaseIndexInCurrentTest();
-        row.createCell(0).setCellValue(index);
+        row.createCell(0).setCellValue(stt++);
         row.createCell(1).setCellValue(getCurrentTime());
         row.createCell(2).setCellValue(email);
         row.createCell(3).setCellValue(password);
@@ -34,10 +35,9 @@ public class ExcelReport {
         row.createCell(5).setCellValue(actual);
         row.createCell(6).setCellValue(status);
     }
-    // === KẾT THÚC LOGIN ===
 
-    // === BẮT ĐẦU SIGNUP ===
     public static void startNewSignupTest(String sheetName) {
+        resetSTT();
         currentSheetName = sheetName;
         setupSheetWithHeaders(new String[]{
                 "STT", "Thời gian", "Họ", "Tên", "Email", "Mật khẩu", "Kết quả mong đợi", "Kết quả thực tế", "Trạng thái"
@@ -47,8 +47,7 @@ public class ExcelReport {
     public static void writeSignupReport(String lastName, String firstName, String email, String password,
                                          String expected, String actual, String status) {
         Row row = sheet.createRow(currentRow++);
-        int index = getTestCaseIndexInCurrentTest();
-        row.createCell(0).setCellValue(index);
+        row.createCell(0).setCellValue(stt++);
         row.createCell(1).setCellValue(getCurrentTime());
         row.createCell(2).setCellValue(lastName);
         row.createCell(3).setCellValue(firstName);
@@ -58,10 +57,9 @@ public class ExcelReport {
         row.createCell(7).setCellValue(actual);
         row.createCell(8).setCellValue(status);
     }
-    // === KẾT THÚC SIGNUP ===
 
-    // === BẮT ĐẦU SEARCH ===
     public static void startNewSearchTest(String sheetName) {
+        resetSTT();
         currentSheetName = sheetName;
         setupSheetWithHeaders(new String[]{
                 "STT", "Thời gian", "Từ khóa", "Kết quả mong đợi", "Kết quả thực tế", "Trạng thái"
@@ -70,17 +68,16 @@ public class ExcelReport {
 
     public static void writeSearchReport(String keyword, String expected, String actual, String status) {
         Row row = sheet.createRow(currentRow++);
-        int index = getTestCaseIndexInCurrentTest();
-        row.createCell(0).setCellValue(index);
+        row.createCell(0).setCellValue(stt++);
         row.createCell(1).setCellValue(getCurrentTime());
         row.createCell(2).setCellValue(keyword);
         row.createCell(3).setCellValue(expected);
         row.createCell(4).setCellValue(actual);
         row.createCell(5).setCellValue(status);
     }
-    // === KẾT THÚC SEARCH ===
-    // === BẮT ĐẦU ORDER ===
+
     public static void startNewOrderTest(String sheetName) {
+        resetSTT();
         currentSheetName = sheetName;
         setupSheetWithHeaders(new String[]{
                 "STT", "Thời gian", "Tên sách", "Họ tên", "SĐT", "Địa chỉ", "Tỉnh", "Huyện", "Xã",
@@ -88,29 +85,31 @@ public class ExcelReport {
         });
     }
 
-    public static void writeOrderReport(String bookTitle, String fullName, String phone, String address, String province,
-                                        String district, String ward, String note, String coupon, String payment,
-                                        String expected, String actual, String status) {
+    public static void writeOrderReport(
+            String bookTitle, String email, String fullName, String phone, String address, String province,
+            String district, String ward, String note, String coupon, String payment,
+            String expected, String actual, String status
+    )
+    {
         Row row = sheet.createRow(currentRow++);
         int col = 0;
-        row.createCell(col++).setCellValue(getTestCaseIndexInCurrentTest());
-        row.createCell(col++).setCellValue(getCurrentTime());
-        row.createCell(col++).setCellValue(bookTitle);
-        row.createCell(col++).setCellValue(fullName);
-        row.createCell(col++).setCellValue(phone);
-        row.createCell(col++).setCellValue(address);
-        row.createCell(col++).setCellValue(province);
-        row.createCell(col++).setCellValue(district);
-        row.createCell(col++).setCellValue(ward);
-        row.createCell(col++).setCellValue(note);
-        row.createCell(col++).setCellValue(coupon);
-        row.createCell(col++).setCellValue(payment);
-        row.createCell(col++).setCellValue(expected);
-        row.createCell(col++).setCellValue(actual);
-        row.createCell(col).setCellValue(status);
+        row.createCell(0).setCellValue(bookTitle);
+        row.createCell(1).setCellValue(email);
+        row.createCell(2).setCellValue(fullName);
+        row.createCell(3).setCellValue(phone);
+        row.createCell(4).setCellValue(address);
+        row.createCell(5).setCellValue(province);
+        row.createCell(6).setCellValue(district);
+        row.createCell(7).setCellValue(ward);
+        row.createCell(8).setCellValue(note);
+        row.createCell(9).setCellValue(coupon);
+        row.createCell(10).setCellValue(payment);
+        row.createCell(11).setCellValue(expected);
+        row.createCell(12).setCellValue(actual);
+        row.createCell(13).setCellValue(status);
+
     }
-    // === KẾT THÚC ORDER ===
-    // === HÀM DÙNG CHUNG ===
+
     private static void setupSheetWithHeaders(String[] headers) {
         try {
             File file = new File(filePath);
@@ -144,38 +143,6 @@ public class ExcelReport {
         }
     }
 
-//// === BẮT ĐẦU ADD ADDRESS ===
-//    public static void startNewAddAddressTest(String sheetName) {
-//      currentSheetName = sheetName;
-//     setupSheetWithHeaders(new String[]{
-//             "STT", "Thời gian", "Email", "Họ tên", "SĐT", "Địa chỉ", "Tỉnh", "Huyện", "Xã",
-//             "Ghi chú", "Mã giảm giá", "PTTT", "Kết quả mong đợi", "Kết quả thực tế", "Trạng thái"
-//     });
-//    }
-//
-//    public static void writeOrderReport(String email, String fullName, String phone, String address, String province,
-//                                        String district, String ward, String note, String coupon, String payment,
-//                                        String expected, String actual, String status) {
-//        Row row = sheet.createRow(currentRow++);
-//        int col = 0;
-//        row.createCell(col++).setCellValue(getTestCaseIndexInCurrentTest()); // STT
-//        row.createCell(col++).setCellValue(getCurrentTime());                // Thời gian
-//        row.createCell(col++).setCellValue(email);                           // Email
-//        row.createCell(col++).setCellValue(fullName);                        // Họ tên
-//        row.createCell(col++).setCellValue(phone);                           // SĐT
-//        row.createCell(col++).setCellValue(address);                         // Địa chỉ
-//        row.createCell(col++).setCellValue(province);                        // Tỉnh
-//        row.createCell(col++).setCellValue(district);                        // Huyện
-//        row.createCell(col++).setCellValue(ward);                            // Xã
-//        row.createCell(col++).setCellValue(note);                            // Ghi chú
-//        row.createCell(col++).setCellValue(coupon);                          // Mã giảm giá
-//        row.createCell(col++).setCellValue(payment);                         // PTTT
-//        row.createCell(col++).setCellValue(expected);                        // Kết quả mong đợi
-//        row.createCell(col++).setCellValue(actual);                          // Kết quả thực tế
-//        row.createCell(col).setCellValue(status);                            // Trạng thái
-//    }
-
-
     private static int countPreviousTests() {
         int count = 1;
         for (int i = 0; i <= sheet.getLastRowNum(); i++) {
@@ -193,28 +160,14 @@ public class ExcelReport {
     private static void writeTestTitle() {
         Row testTitleRow = sheet.createRow(currentRow++);
         Cell titleCell = testTitleRow.createCell(0);
-        titleCell.setCellValue("Test " + testCount);
-    }
-
-    private static int getTestCaseIndexInCurrentTest() {
-        int count = 0;
-        for (int i = currentRow - 1; i >= 0; i--) {
-            Row row = sheet.getRow(i);
-            if (row == null) continue;
-            Cell cell = row.getCell(0);
-            if (cell == null) continue;
-            String value = cell.toString();
-            if (value.startsWith("Test ")) {
-                break;
-            } else {
-                count++;
-            }
-        }
-        return count + 1;
+        titleCell.setCellValue("Test " + testCount + " - " + getCurrentTime());
     }
 
     public static void saveReport() {
         try (FileOutputStream fos = new FileOutputStream(filePath)) {
+            for (int i = 0; i < sheet.getRow(1).getLastCellNum(); i++) {
+                sheet.autoSizeColumn(i);
+            }
             workbook.write(fos);
             workbook.close();
         } catch (IOException e) {
@@ -223,7 +176,10 @@ public class ExcelReport {
     }
 
     private static String getCurrentTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(new Date());
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    }
+
+    private static void resetSTT() {
+        stt = 1;
     }
 }

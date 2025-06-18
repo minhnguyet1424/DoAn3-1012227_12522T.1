@@ -10,7 +10,7 @@ public class HomePage {
     private WebDriverWait wait;
 
     private By searchBox = By.xpath("//input[@placeholder='Tìm kiếm...']");
-    private By quantityInput = By.id("qty"); // ✅ đúng theo HTML bạn cung cấp
+    private By quantityInput = By.id("qty"); //  đúng theo HTML bạn cung cấp
     private By increaseQtyBtn = By.cssSelector("button.increase.count");
     private By decreaseQtyBtn = By.cssSelector("button.reduced.count");
     private By addToCartBtn = By.xpath("//button[contains(.,'Mua ngay')]");
@@ -81,8 +81,8 @@ public class HomePage {
     }
 
     // Nhấn nút "Tiến hành thanh toán" từ popup
-    public CheckoutPage proceedToCheckoutFromPopup() {
+    public OrderPage proceedToCheckoutFromPopup() {
         wait.until(ExpectedConditions.elementToBeClickable(proceedToCheckoutBtn)).click();
-        return new CheckoutPage(driver);
+        return new OrderPage(driver);
     }
 }

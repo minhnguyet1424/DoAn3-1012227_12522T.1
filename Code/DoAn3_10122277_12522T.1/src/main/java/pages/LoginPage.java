@@ -2,7 +2,7 @@ package pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+
 
 public class LoginPage {
     WebDriver driver;
@@ -29,11 +29,6 @@ public class LoginPage {
         this.driver.findElement(this.loginButton).click();
     }
 
-    public void login(String email, String password) {
-        enterEmail(email);
-        enterPassword(password);
-        clickLogin();
-    }
 
     public String getErrorMessage() {
         try {
@@ -43,12 +38,4 @@ public class LoginPage {
         }
     }
 
-    public String getBlockTitleMessage() {
-        try {
-            WebElement blockTitle = driver.findElement(By.className("block-title"));
-            return blockTitle.getText().trim();
-        } catch (Exception e) {
-            return "Không tìm thấy block-title";
-        }
-    }
 }

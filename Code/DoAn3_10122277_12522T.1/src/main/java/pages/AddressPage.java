@@ -1,60 +1,37 @@
 package pages;
 
 import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.*;
 
-import java.time.Duration;
-
-public class AddAddressPage {
+public class AddressPage {
     private WebDriver driver;
-    private WebDriverWait wait;
 
-    public AddAddressPage(WebDriver driver) {
+    public AddressPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     }
 
-    // Mở form thêm địa chỉ
-    public void openAddAddressForm() {
-        WebElement btnShowForm = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//a[@onclick='Bizweb.CustomerAddress.toggleNewForm(); return false;'][contains(text(),'Thêm địa chỉ')]")));
-        btnShowForm.click();
+    public void fillAddressForm(String firstName, String lastName, String company,
+                                String address1, String address2, String city,
+                                String country, String zip, String phone) {
+        driver.findElement(By.name("first_name")).sendKeys(firstName);
+        driver.findElement(By.name("last_name")).sendKeys(lastName);
+        driver.findElement(By.name("company")).sendKeys(company);
+        driver.findElement(By.name("address1")).sendKeys(address1);
+        driver.findElement(By.name("address2")).sendKeys(address2);
+        driver.findElement(By.name("city")).sendKeys(city);
+        driver.findElement(By.name("country")).sendKeys(country); // hoặc chọn bằng Select nếu là dropdown
+        driver.findElement(By.name("zip")).sendKeys(zip);
+        driver.findElement(By.name("phone")).sendKeys(phone);
     }
 
-    // Nhập thông tin địa chỉ mới
-    public void fillAddressForm(String firstName, String lastName, String company, String address1,
-                                String address2, String city, String country, String zip, String phone) {
-
-        WebElement container = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("add_address")));
-
-        container.findElement(By.xpath(".//input[@placeholder='Tên']")).sendKeys(firstName);
-        container.findElement(By.xpath(".//input[@placeholder='Họ']")).sendKeys(lastName);
-        container.findElement(By.xpath(".//input[@placeholder='Công ty']")).sendKeys(company);
-        container.findElement(By.xpath(".//input[@placeholder='Địa chỉ 1']")).sendKeys(address1);
-        container.findElement(By.xpath(".//input[@placeholder='Địa chỉ 2']")).sendKeys(address2);
-        container.findElement(By.xpath(".//input[@placeholder='Thành phố']")).sendKeys(city);
-        container.findElement(By.xpath(".//input[@placeholder='Zip']")).sendKeys(zip);
-        container.findElement(By.xpath(".//input[@placeholder='Số điện thoại']")).sendKeys(phone);
-
-        Select countryDropdown = new Select(container.findElement(By.id("address_country_")));
-        countryDropdown.selectByVisibleText(country);
+    public void submitAddress() {
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
     }
 
-    // Click nút “Thêm địa chỉ”
-    public void clickAddAddressButton() {
-        WebElement btnAdd = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//div[@id='add_address']//input[@value='Thêm địa chỉ']")));
-        btnAdd.click();
-    }
-
-    // Lấy thông báo sau khi thêm địa chỉ (nếu có)
-    public String getConfirmationMessage() {
+    public String getActualResult() {
         try {
-            WebElement alert = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.className("alert-success")));
-            return alert.getText().trim();
-        } catch (TimeoutException e) {
-            return "Không thấy thông báo";
+            return driver.findElement(By.className("success-message")).getText(); // tùy trang web
+        } catch (Exception e) {
+            return "Không thành công";
         }
     }
 }

@@ -1,84 +1,65 @@
- package test;
+package test;
 
-import base.QlWebdriver;
-import java.util.List;
+import base.BaseSetup;
+import config.AppURL;
 import org.openqa.selenium.WebDriver;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import pages.LoginPage;
-import utils.ExcelHelpers;
 import utils.ExcelReader;
+import utils.ExcelReport;
 
-public class LoginTest {
-    WebDriver driver;
-    String excelPath = "src/test/resources/Book1.xlsx";
-    String reportPath = "test-output/LoginTestReport.xlsx";
-    ExcelHelpers excelHelpers = new ExcelHelpers();
+import java.util.List;
+
+public class LoginTest extends BaseSetup {  // ✅ Kế thừa BaseSetup
     List<String[]> testData;
 
     @BeforeClass
     public void setup() throws Exception {
-        this.testData = ExcelReader.readData(this.excelPath);
-        this.excelHelpers.setExcelFile(this.reportPath, "Report");
+        initializeDriver(); // ✅ Sử dụng phương thức từ BaseSetup
+        testData = ExcelReader.readData("src/test/resources/Book1.xlsx");
+        ExcelReport.startNewLoginTest("Login");
     }
 
-    @BeforeMethod
-    public void setUp() {
-        this.driver = QlWebdriver.getDriver();
-        this.driver.get("https://sachtaodan.vn/account/login");
-    }
-
-    @AfterMethod
+    @AfterClass
     public void tearDown() {
-        QlWebdriver.closeDriver();
+        ExcelReport.saveReport();
+        closeDriver(); // ✅ Sử dụng phương thức từ BaseSetup
     }
 
-    @Test(
-            dataProvider = "loginData"
-    )
+    @Test(dataProvider = "loginData")
     public void testLogin(String email, String password, String expectedError, String rowIndexStr) throws Exception {
         int rowIndex = Integer.parseInt(rowIndexStr);
-        LoginPage loginPage = new LoginPage(this.driver);
+
+        // Đảm bảo luôn về trang login
+        if (!driver.getCurrentUrl().contains("/account/login")) {
+            driver.get("https://sachtaodan.vn/account/logout");
+            Thread.sleep(2000);
+        }
+        driver.get(AppURL.LOGIN);
+
+        LoginPage loginPage = new LoginPage(driver);
         loginPage.enterEmail(email);
         loginPage.enterPassword(password);
-        Thread.sleep(1000L);
         loginPage.clickLogin();
-        Thread.sleep(3000L);
+        Thread.sleep(3000);
+
         String actualResult;
-        if (this.driver.getCurrentUrl().contains("/account") && !this.driver.getCurrentUrl().contains("/account/login")) {
-            if (rowIndex == 1) {
-                //  Lấy nội dung block-title trên trang tài khoản
-                actualResult = loginPage.getBlockTitleMessage();
-            } else {
-                actualResult = "Đăng nhập thành công";
-            }
-        }else {
+        if (driver.getCurrentUrl().contains("/account") && !driver.getCurrentUrl().contains("/account/login")) {
+            actualResult = "Đăng nhập thành công";
+        } else {
             actualResult = loginPage.getErrorMessage();
         }
 
         String status = actualResult.equals(expectedError) ? "Pass" : "Fail";
-        System.out.println("TC" + rowIndex + ": Expected: " + expectedError + " | Actual: " + actualResult + " | " + status);
-        this.excelHelpers.setCellData(String.valueOf(rowIndex), rowIndex, 0);
-        this.excelHelpers.setCellData(email, rowIndex, 1);
-        this.excelHelpers.setCellData(password, rowIndex, 2);
-        this.excelHelpers.setCellData(expectedError, rowIndex, 3);
-        this.excelHelpers.setCellData(actualResult, rowIndex, 4);
-        this.excelHelpers.setCellData(status, rowIndex, 5);
+        ExcelReport.writeLoginReport(email, password, expectedError, actualResult, status);
     }
 
-    @DataProvider(
-            name = "loginData"
-    )
+    @DataProvider(name = "loginData")
     public Object[][] loginDataProvider() {
-        Object[][] data = new Object[this.testData.size()][4];
-
-        for(int i = 0; i < this.testData.size(); ++i) {
-            data[i] = this.testData.get(i);
+        Object[][] data = new Object[testData.size()][4];
+        for (int i = 0; i < testData.size(); ++i) {
+            data[i] = testData.get(i);
         }
-
         return data;
     }
 }

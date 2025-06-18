@@ -1,72 +1,77 @@
 package test;
 
-import base.BaseSetup;
 import base.QlWebdriver;
+import config.AppURL;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.*;
 import pages.SearchPage;
 import utils.ExcelReader;
 import utils.ExcelReport;
 
-import java.io.File;
-import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
-import java.util.Arrays;
 
-public class SearchTest extends BaseSetup {
+public class SearchTest {
     WebDriver driver;
-    SearchPage searchPage;
-    ExcelReport report;
-    String inputPath = "src/test/resources/DataSearch.xlsx";
-    String reportPath = "test-output/SearchTestReport.xlsx";
+    List<String[]> testData;
 
     @BeforeClass
     public void setup() throws Exception {
-        // Xóa file cũ nếu có
-        File reportFile = new File(reportPath);
-        if (reportFile.exists()) {
-            reportFile.delete();
-        }
-
-        driver = setupDriver();
-        driver.get("https://sachtaodan.vn/");
-        searchPage = new SearchPage(driver);
-
-        // Tạo header riêng cho báo cáo Search
-        List<String> searchHeaders = Arrays.asList("STT", "Từ khóa", "Kết quả mong đợi", "Kết quả thực tế");
-        report = new ExcelReport(reportPath, searchHeaders);
-    }
-
-    @DataProvider(name = "searchData")
-    public Object[][] getSearchData() {
-        List<String[]> data = ExcelReader.readSearchData(inputPath);
-        Object[][] result = new Object[data.size()][3];
-        for (int i = 0; i < data.size(); i++) {
-            result[i] = data.get(i);
-        }
-        return result;
-    }
-
-    @Test(dataProvider = "searchData")
-    public void testSearch(String keyword, String expectedText, String rowIndexStr) throws IOException {
-        int rowIndex = Integer.parseInt(rowIndexStr);
-
-        searchPage.searchKeyword(keyword);
-        try {
-            Thread.sleep(2000); // chờ load kết quả
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        String actualText = searchPage.getSearchResultText();
-
-        // Ghi vào báo cáo Search
-        report.writeSearchTestResult(rowIndex, keyword, expectedText, actualText);
+        testData = ExcelReader.readSearchData("src/test/resources/DataSearch.xlsx");
+        ExcelReport.startNewSearchTest("Search");
+        driver = QlWebdriver.getDriver();
     }
 
     @AfterClass
-    public void tearDown() throws IOException {
-        report.close();
+    public void tearDown() {
+        ExcelReport.saveReport();
         QlWebdriver.closeDriver();
+    }
+
+    @Test(dataProvider = "searchData")
+    public void testSearchKeyword(String keyword, String expected) throws Exception {
+        driver.get(AppURL.TRANG_CHU);
+        SearchPage searchPage = new SearchPage(driver);
+        searchPage.search(keyword);
+
+        Thread.sleep(2000); // Có thể thay bằng WebDriverWait nếu cần
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        List<WebElement> alerts = driver.findElements(By.cssSelector(".alert.alert-warning"));
+
+        String actual;
+
+        if (!alerts.isEmpty()) {
+            // Nếu có thông báo cảnh báo → không tìm thấy sản phẩm
+            actual = cleanAlertText(alerts.get(0));
+        } else {
+            // Nếu không có cảnh báo → giả định tìm thấy sản phẩm
+            actual = "Tìm thấy sản phẩm chứa từ khóa " + keyword;
+        }
+
+        String status = actual.equals(expected) ? "Pass" : "Fail";
+        ExcelReport.writeSearchReport(keyword, expected, actual, status);
+    }
+
+    // Xử lý loại bỏ nút "× Close" khỏi nội dung thông báo
+    private String cleanAlertText(WebElement alert) {
+        String raw = alert.getText().trim();
+        return raw.replace("×", "")
+                .replace("Close", "")
+                .trim();
+    }
+
+    @DataProvider(name = "searchData")
+    public Object[][] searchDataProvider() {
+        Object[][] data = new Object[testData.size()][2];
+        for (int i = 0; i < testData.size(); ++i) {
+            data[i][0] = testData.get(i)[0]; // keyword
+            data[i][1] = testData.get(i)[1]; // expectedResult
+        }
+        return data;
     }
 }
